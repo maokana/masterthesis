@@ -17,6 +17,10 @@ data/
 ├── membership_similarity.csv
 └── sample_input/
     └── small_corpus.json
+db/
+├── schema.sql
+├── sample_insert.sql   
+└── sample_input.json
 ```
 
 ## 1. 下処理
