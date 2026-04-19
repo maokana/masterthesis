@@ -1,16 +1,22 @@
-# 修士論文コード整理
+# Frontiers論文データ分析
 
 本リポジトリは、論文テキストおよび研究分野間の関係性を分析するためのコード群です。
 
 ## ディレクトリ構成
 
 ```
-.
+main/
 ├── alltext_count.py
 ├── embedding_and_trans.py
 ├── maintopicbase_jaccard.py
 ├── joinmember_jaccard.py
 └── hogehoge.sql
+data/
+├── common_words.csv
+├── topic_similarity.csv
+├── membership_similarity.csv
+└── sample_input/
+    └── small_corpus.json
 ```
 
 ## 1. 下処理
