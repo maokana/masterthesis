@@ -17,8 +17,12 @@ data/
 ├── topic_similarity.csv
 ├── membership_similarity.csv
 ├── interaction_count.csv
-└── sample_input/
-    └── small_corpus.json
+└── sample_corpus.zip
+    └── corpus/
+        ├── Medicine.txt
+        ├── Biology.txt
+        ├── Physics.txt
+        └── Chemistry.txt
 db/
 ├── schema.sql
 ├── sample_insert.sql   
