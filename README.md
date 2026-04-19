@@ -1,6 +1,9 @@
 # Frontiers論文データ分析
 
 本リポジトリは、論文テキストおよび研究分野間の関係性を分析するためのコード群です。
+対象はFrontiersの以下の分野です。
+（対象分野）
+Computer Science, Psychology, Aging Neuroscience, Applied Mathematics and Statistics, Astronomy and Space Sciences, Big Data, Bioengineering and Biotechnology, Cardiovascular Medicine, Cell and Developmental Biology, Cellular Neuroscience, Cellular and Infection Microbiology, Chemistry, Communication, Digital Health, Earth Science, Ecology and Evolution, Education, Endocrinology, Energy Research, Environmental Science, Forests and Global Change, Genetics, Human Neuroscience, Immunology, Marine Science, Materials, Medicine, Microbiology, Molecular Biosciences, Neurology, Neuroscience, Nutrition, Oncology, Oral Health, Pediatrics, Pharmacology, Physics, Physiology, Plant Science, Political Science, Psychiatry, Public Health, Sociology, Sports and Active Living, Veterinary Science, Virtual Reality, Water,Artificial Intelligence
 
 ## ディレクトリ構成
 
