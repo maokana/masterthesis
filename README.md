@@ -13,8 +13,10 @@ main/
 └── hogehoge.sql
 data/
 ├── common_words.csv
+├── word_similarity.csv
 ├── topic_similarity.csv
 ├── membership_similarity.csv
+├── interaction_count.csv
 └── sample_input/
     └── small_corpus.json
 db/
