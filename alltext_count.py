@@ -3,99 +3,82 @@
 #全論文でカウントし、出現頻度が上位2000語
 
 import os
+import re
+import math
 import numpy as np
 import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
 from collections import Counter, defaultdict
 
 # =========================
-# Load corpus
+# Generator tokenizer（超重要）
 # =========================
-
-def load_corpus(folder):
-    files = sorted([f for f in os.listdir(folder) if f.endswith(".txt")])
-
-    docs = []
-    labels = []
-
-    for f in files:
-        path = os.path.join(folder, f)
-        with open(path, encoding="utf-8") as file:
-            docs.append(file.read())
-            labels.append(f.replace(".txt", ""))
-
-    return docs, labels
-
+def tokenize_stream(text):
+    for match in re.finditer(r"\b\w+\b", text.lower()):
+        yield match.group(0)
 
 # =========================
 # Main
 # =========================
+def main(input_folder=r"C:/Users/kanappe/Desktop/txt", output_csv="vocab.csv", top_n=2000):
 
-def main(input_folder="corpus", output_csv="vocab.csv", top_n=2000):
+    files = [os.path.join(input_folder, f)
+             for f in os.listdir(input_folder) if f.endswith(".txt")]
 
-    # -------------------------
-    # Load data
-    # -------------------------
-    docs, labels = load_corpus(input_folder)
-
-    # -------------------------
-    # TF-IDF
-    # -------------------------
-    vectorizer = TfidfVectorizer(
-        stop_words="english",
-        min_df=1
-    )
-
-    tfidf_matrix = vectorizer.fit_transform(docs)
-    terms = np.array(vectorizer.get_feature_names_out())
-
-    # -------------------------
-    # Word statistics
-    # -------------------------
+    total_docs = 0
     word_doc_count = Counter()
     word_freq_total = Counter()
-    word_tfidf_scores = defaultdict(list)
 
-    # per-document processing
-    for i, doc in enumerate(docs):
+    # -------------------------
+    # 1st pass（逐次）
+    # -------------------------
+    for path in files:
+        with open(path, encoding="utf-8") as f:
+            text = f.read()
 
-        row = tfidf_matrix[i].toarray().flatten()
+        total_docs += 1
 
-        words_in_doc = doc.lower().split()
-        counter = Counter(words_in_doc)
+        counter = Counter(tokenize_stream(text))
 
         for w in counter:
             word_doc_count[w] += 1
             word_freq_total[w] += counter[w]
 
-        for j, w in enumerate(terms):
-            if row[j] > 0:
-                word_tfidf_scores[w].append(row[j])
+    # -------------------------
+    # IDF
+    # -------------------------
+    idf = {
+        w: math.log((1 + total_docs) / (1 + df)) + 1
+        for w, df in word_doc_count.items()
+    }
 
     # -------------------------
-    # Build table
+    # 2nd pass（逐次）
+    # -------------------------
+    word_tfidf_scores = defaultdict(list)
+
+    for path in files:
+        with open(path, encoding="utf-8") as f:
+            text = f.read()
+
+        counter = Counter(tokenize_stream(text))
+
+        for w, tf in counter.items():
+            word_tfidf_scores[w].append(tf * idf[w])
+
+    # -------------------------
+    # DataFrame
     # -------------------------
     data = []
 
-    for w in terms:
-
-        doc_count = word_doc_count[w]
-        freq = word_freq_total[w]
-
-        tfidf_vals = word_tfidf_scores.get(w, [])
-
-        if len(tfidf_vals) == 0:
-            continue
-
-        tfidf_mean = np.mean(tfidf_vals)
-        tfidf_var = np.var(tfidf_vals)
+    for w in word_freq_total:
+        tfidf_vals = word_tfidf_scores[w]
 
         data.append([
             w,
-            doc_count,
-            freq,
-            tfidf_mean,
-            tfidf_var
+            word_doc_count[w],
+            word_freq_total[w],
+            np.mean(tfidf_vals),
+            np.var(tfidf_vals)
         ])
 
     df = pd.DataFrame(
@@ -104,29 +87,15 @@ def main(input_folder="corpus", output_csv="vocab.csv", top_n=2000):
     )
 
     # -------------------------
-    # Filter conditions
+    # Filter
     # -------------------------
-
-    # (1) all domains >= 5 occurrences
     df = df[df["doc_freq"] >= 5]
 
-    # (2) top 50% TF-IDF
     threshold = df["tfidf"].median()
     df = df[df["tfidf"] >= threshold]
 
-    # -------------------------
-    # Sort by frequency
-    # -------------------------
-    df = df.sort_values(by="freq", ascending=False)
+    df = df.sort_values(by="freq", ascending=False).head(top_n)
 
-    # -------------------------
-    # Top N
-    # -------------------------
-    df = df.head(top_n)
-
-    # -------------------------
-    # Save
-    # -------------------------
     df.to_csv(output_csv, index=False)
 
     print(df.head(20))
