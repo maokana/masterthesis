@@ -125,7 +125,8 @@ def main():
   #key:変換先（wiki)のcorpusでの単語、value:変換前（各分野）のcorpusでの単語
   #vocab_src（wiki)はkey,vocab_tgt(各分野）はvalueを設定
   #vocab_dicを変更したらpickleも再生成が必要
-  vocab_dic = {'may':'may', 'also':'also', 'non':'non', 'however':'however', 'could':'could', 'al':'al', 'et':'et'}
+  #vocab_dic = {'may':'may', 'also':'also', 'non':'non', 'however':'however', 'could':'could', 'al':'al', 'et':'et'}--修論時点
+  vocab_dic = {'may':'may', 'also':'also', 'non':'non', 'however':'however', 'could':'could', 'al':'al', 'et':'et','the':'the','and':'and','of':'of','with':'with','for':'for','that':'that','in':'in','this':'this','from':'from'}
   vocab_src = vocab_dic.keys()
   vocab_tgt = vocab_dic.values()
 
