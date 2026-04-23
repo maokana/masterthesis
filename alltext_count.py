@@ -1,126 +1,95 @@
 #各分野の論文で1回以上出現
-#TF-IDFが上位70%
 #全論文でカウントし、出現頻度が上位2500語
 
 import os
 import re
-import math
 import numpy as np
 import pandas as pd
-from collections import Counter, defaultdict
+from collections import Counter
 
-# =========================
-# tokenize
-# =========================
-def tokenize_line(line):
-    return re.findall(r"\b\w+\b", line.lower())
+def tokenize(text):
+    return re.findall(r"\b\w+\b", text.lower())
 
-# =========================
-# main
-# =========================
-def main(input_folder, output_csv="vocab.csv", top_n=2500):
+def main(input_folder=".", output_csv="vocab.csv"):
 
     files = [os.path.join(input_folder, f)
-             for f in os.listdir(input_folder) if f.endswith(".txt")]
+             for f in os.listdir(input_folder)
+             if f.endswith(".txt")]
 
     total_docs = len(files)
 
-    word_doc_count = Counter()
-    word_freq_total = Counter()
-    word_tfidf_per_doc = defaultdict(list)
+    doc_counters = []
+    word_doc_freq = Counter()   # ← これを追加
 
     # =========================
-    # 1st pass: freq + doc_freq
-    # =========================
-    for path in files:
-        counter = Counter()
-
-        with open(path, encoding="utf-8") as f:
-            for line in f:
-                counter.update(tokenize_line(line))
-
-        for w, tf in counter.items():
-            word_freq_total[w] += tf
-            word_doc_count[w] += 1
-
-    # =========================
-    # IDF
-    # =========================
-    idf = {
-        w: math.log((1 + total_docs) / (1 + df)) + 1
-        for w, df in word_doc_count.items()
-    }
-
-    # =========================
-    # TF-IDF per document
+    # 1st pass
     # =========================
     for path in files:
         counter = Counter()
 
         with open(path, encoding="utf-8") as f:
             for line in f:
-                counter.update(tokenize_line(line))
+                counter.update(tokenize(line))
 
-        for w, tf in counter.items():
-            word_tfidf_per_doc[w].append(tf * idf[w])
+        doc_counters.append(counter)
 
-    # =========================
-    # DataFrame作成
-    # =========================
+        # ★ 前のコード方式（重要）
+        for w in counter:
+            word_doc_freq[w] += 1
+
+    # 全単語集合
+    all_words = set(word_doc_freq.keys())
+
     data = []
 
-    for w in word_freq_total:
+    # =========================
+    # 単語ごとに集計
+    # =========================
+    for w in all_words:
 
-        tfidf_vals = word_tfidf_per_doc[w]
+        doc_freq = word_doc_freq[w]
 
-        data.append([
-            w,
-            word_freq_total[w],
-            np.mean(tfidf_vals),
-            np.var(tfidf_vals),
-            word_doc_count[w]
-        ])
+        # ★ 前と同じ条件
+        if doc_freq == total_docs:
+
+            tf_list = []
+
+            for counter in doc_counters:
+                tf_list.append(counter.get(w, 0))
+
+            freq = sum(tf_list)
+            mean_tf = np.mean(tf_list)
+            variance = np.var(tf_list)
+
+            # CV
+            if mean_tf > 0:
+                cv = np.std(tf_list) / mean_tf
+            else:
+                cv = 0
+
+            data.append([
+                w,
+                freq,
+                mean_tf,
+                variance,
+                cv,
+                doc_freq
+            ])
 
     df = pd.DataFrame(
         data,
-        columns=["word", "freq", "tfidf", "variance", "doc_freq"]
+        columns=["word", "freq", "mean_tf", "variance", "cv", "doc_freq"]
     )
 
-    # =========================
-    # フィルタ①：全48ファイルに出現
-    # =========================
-    df = df[df["doc_freq"] == total_docs]
-
-    # =========================
-    # フィルタ②：TF-IDF上位70%
-    # =========================
-    tfidf_threshold = df["tfidf"].quantile(0.3)
-    df = df[df["tfidf"] >= tfidf_threshold]
-
-    # =========================
-    # ソート：freq降順
-    # =========================
     df = df.sort_values(by="freq", ascending=False)
 
-    # =========================
-    # Top N
-    # =========================
-    df = df.head(top_n)
-
-    # =========================
-    # 出力
-    # =========================
     df.to_csv(output_csv, index=False)
 
-    # =========================
-    # チェック
-    # =========================
-    print("=== TOP 20 ===")
+    print("total_docs:", total_docs)
+    print("result size:", len(df))
     print(df.head(20))
-
-    print("\n=== doc_freq check ===")
-    print(df["doc_freq"].describe())
 
 
 if __name__ == "__main__":
-    main(input_folder=".")
+    main(".")
+
