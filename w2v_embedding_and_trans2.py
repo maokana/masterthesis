@@ -22,16 +22,8 @@ def list_file(dp):
     return sorted([
         os.path.join(dp, f)
         for f in os.listdir(dp)
-        if os.path.isfile(os.path.join(dp, f))
+        if f.endswith(".txt") and os.path.isfile(os.path.join(dp, f))
     ])
-
-def save_pickle(obj, fp):
-    with open(fp, 'wb') as f:
-        pickle.dump(obj, f)
-
-def load_pickle(fp):
-    with open(fp, 'rb') as f:
-        return pickle.load(f)
 
 def cos_sim(v1, v2):
     denom = np.linalg.norm(v1) * np.linalg.norm(v2)
@@ -40,17 +32,12 @@ def cos_sim(v1, v2):
     return float(np.dot(v1, v2) / denom)
 
 # =========================
-# Linear mapping (closed form)
+# Linear mapping
 # =========================
 
 def learn_linear_map(X, Z):
-    """
-    Solve W such that XW ≈ Z
-    X: (n, d1)
-    Z: (n, d2)
-    """
     W, _, _, _ = np.linalg.lstsq(X, Z, rcond=None)
-    return W  # (d1, d2)
+    return W
 
 # =========================
 # Main
@@ -58,28 +45,20 @@ def learn_linear_map(X, Z):
 
 def main():
 
-    # -------------------------
-    # Paths
-    # -------------------------
     dp_src_txt = 'src_txt'
     dp_src_bin = 'src_bin'
-    dp_pickle = 'pickle'
-    dp_cossim = 'cossim'
-
-    os.makedirs(dp_src_bin, exist_ok=True)
-    os.makedirs(dp_pickle, exist_ok=True)
-    os.makedirs(dp_cossim, exist_ok=True)
-
     wiki_path = 'vec_enwiki-20160601_w2v_min50_win10_dim300_skipgram_ns5.txt'
 
+    os.makedirs(dp_src_bin, exist_ok=True)
+
     # -------------------------
-    # Load Wikipedia vectors
+    # Wikipedia読み込み
     # -------------------------
     logging.info("Loading Wikipedia model...")
     wiki_model = KeyedVectors.load_word2vec_format(wiki_path, binary=False)
 
     # =========================
-    # 1. Train domain embeddings
+    # 1. Word2Vec学習
     # =========================
     src_txt_list = list_file(dp_src_txt)
 
@@ -90,12 +69,13 @@ def main():
         if os.path.exists(fp_bin):
             continue
 
-        logging.info(f"Training Word2Vec: {fn}")
+        logging.info(f"Training: {fn}")
 
-        corpus = list(open(fp_txt, encoding='utf-8'))
+        with open(fp_txt, encoding='utf-8') as f:
+            corpus = [line.split() for line in f]
 
         model = Word2Vec(
-            sentences=[line.split() for line in corpus],
+            sentences=corpus,
             vector_size=300,
             window=10,
             min_count=5,
@@ -107,19 +87,29 @@ def main():
         model.wv.save_word2vec_format(fp_bin, binary=True)
 
     # =========================
-    # 2. Vocabulary (must be expanded manually)
+    # 2. アンカー語（CV低い語を推奨）
     # =========================
-    vocab = ['analysis', 'model', 'design', 'method']  # ←ここは拡張前提
+    df_vocab = pd.read_csv("vocab.csv")
 
-    # Wikipedia side vectors
-    vocab = [v for v in vocab if v in wiki_model]
+    # CVが低い＝安定語をアンカーに
+    anchor_vocab = df_vocab.sort_values("cv").head(200)["word"].tolist()
 
-    X_wiki = np.array([wiki_model[w] for w in vocab])
+    # Wikipediaに存在する語だけ残す
+    anchor_vocab = [w for w in anchor_vocab if w in wiki_model]
+
+    X_wiki = np.array([wiki_model[w] for w in anchor_vocab])
 
     # =========================
-    # 3. Learn mapping + cosine
+    # 3. analyse_list（比較対象）
     # =========================
+    analyse_list = [
+        'analysis','model','design','figure','method',
+        'parameter','system','result','effect','data'
+    ]
 
+    # =========================
+    # 4. Cos類似度計算
+    # =========================
     combis = list(itertools.combinations(src_txt_list, 2))
     results = []
 
@@ -137,29 +127,57 @@ def main():
             binary=True
         )
 
-        vocab_valid = [w for w in vocab if w in model1 and w in model2]
+        # -------------------------
+        # アンカー語の共通部分
+        # -------------------------
+        anchor_valid = [
+            w for w in anchor_vocab
+            if w in model1 and w in model2
+        ]
 
-        if len(vocab_valid) < 5:
+        if len(anchor_valid) < 50:
+            logging.warning("anchor too small, skip")
             continue
 
-        X1 = np.array([model1[w] for w in vocab_valid])
-        X2 = np.array([model2[w] for w in vocab_valid])
+        X1 = np.array([model1[w] for w in anchor_valid])
+        X2 = np.array([model2[w] for w in anchor_valid])
+        Z = np.array([wiki_model[w] for w in anchor_valid])
 
-        # mapping to Wikipedia space
-        W1 = learn_linear_map(X1, X_wiki[:len(vocab_valid)])
-        W2 = learn_linear_map(X2, X_wiki[:len(vocab_valid)])
+        # -------------------------
+        # 線形変換
+        # -------------------------
+        W1 = learn_linear_map(X1, Z)
+        W2 = learn_linear_map(X2, Z)
 
-        vec1 = np.array([model1[w] @ W1 for w in vocab_valid])
-        vec2 = np.array([model2[w] @ W2 for w in vocab_valid])
+        # -------------------------
+        # analyse_listで比較
+        # -------------------------
+        analyse_valid = [
+            w for w in analyse_list
+            if w in model1 and w in model2 and w in wiki_model
+        ]
+
+        if len(analyse_valid) == 0:
+            continue
+
+        vec1 = np.array([model1[w] @ W1 for w in analyse_valid])
+        vec2 = np.array([model2[w] @ W2 for w in analyse_valid])
 
         cos_list = [cos_sim(a, b) for a, b in zip(vec1, vec2)]
 
-        results.append([os.path.basename(f1), os.path.basename(f2)] + cos_list)
+        results.append(
+            [os.path.basename(f1), os.path.basename(f2)] + cos_list
+        )
 
-    df = pd.DataFrame(results)
-    df.to_csv('cossim.csv', index=False)
+    # =========================
+    # 出力
+    # =========================
+    columns = ["file1", "file2"] + analyse_valid
+    df = pd.DataFrame(results, columns=columns)
 
-    print(df)
+    df.to_csv("cossim.csv", index=False)
+
+    print(df.head())
 
 
 if __name__ == "__main__":
