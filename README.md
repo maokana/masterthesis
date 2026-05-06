@@ -114,6 +114,8 @@ python joinmember_jaccard.py \
 
 研究分野間での相互掲載関係を集計する。
 
+https://ma.maonet.org/
+
 ```sql
 SELECT
     source_field,
