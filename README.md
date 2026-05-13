@@ -30,12 +30,12 @@ data/
 ├── m_membership_similarity.csv --オーナージャーナルベースでのメンバー一致度（Jaccard係数）のデータ
 ├── p_membership_similarity.csv --参加ジャーナルベースでのメンバー一致度（Jaccard係数）のデータ
 ├── interaction_count.csv　--分野間の交流度データ
-└── sample_input/　--main内のコードを動かすためのサンプルデータ
+└── sample_input/　--main内のコードを動かすためのサンプルデータ（ダミー）
     ├── researchtopic.csv
     ├── domain.csv
     ├── journallist.csv
     └── sample_corpus.zip
-    　　　└── corpus/
+    　　　└── corpus/　
        　　　　　 ├── Medicine.txt
         　　　　　├── Biology.txt
        　　　　　 ├── Physics.txt
