@@ -16,7 +16,9 @@ main/
 ├── embedding_and_trans.py
 ├── maintopicbase_jaccard.py
 ├── joinmember_jaccard.py
-└── hogehoge.sql
+├── journallist.sql
+├── mainbase_journallist.py
+└── partbase_journallist.py
 data/
 ├── common_words.csv
 ├── word_similarity.csv
@@ -24,7 +26,7 @@ data/
 ├── membership_similarity.csv
 ├── interaction_count.csv
 └── sample_input/
-    └── small_corpus.json
+    └── small_corpus.zip
 db/
 ├── schema.sql
 ├── sample_insert.sql   
@@ -58,7 +60,7 @@ python alltext_count.py --input_dir ./texts --output common_words.csv
 
 ```bash
 python embedding_and_trans.py \
-  --input common_words.csv \
+  --input small_corpus.zip \ --展開すると分野毎の論文本文のテキストデータが含まれている。
   --w2v vec_enwiki-20160601_w2v_min50_win10_dim300_skipgram_ns5.txt.gz \
   --output embeddings.npy
 ```
@@ -93,7 +95,17 @@ python maintopicbase_jaccard.py \
 - 単語集合の構築
 - Jaccard係数による類似度計算
 
-### (3) 分野グループ（参加関係）ベースの類似度
+### (3) リサーチトピックのオーナー/参加ジャーナルデータの抽出（SQL）
+
+リサーチトピックのオーナーとなるジャーナルとそのトピックに参加したジャーナルのリストを抽出
+
+https://ma.maonet.org/
+
+```sql
+SELECT A.researchtopicid, B.title as main_journal, A.fieldname FROM `researchtopic_fieldjournal` as A left join `researchtopic_ownerjournal` as B on A.researchtopicid = B.researchtopicid;
+```
+
+### (4) 分野グループ（参加関係）ベースの類似度
 
 自誌論文の参加関係から分野集合を作成し、類似度を算出する。
 
@@ -109,25 +121,6 @@ python joinmember_jaccard.py \
 
 - 分野ごとの参加分野集合を構築
 - Jaccard係数による分野間類似度の計算
-
-### (4) 分野間の論文掲載関係（SQL）
-
-研究分野間での相互掲載関係を集計する。
-
-https://ma.maonet.org/
-
-```sql
-SELECT
-    source_field,
-    target_field,
-    COUNT(*) AS publication_count
-FROM
-    publications
-GROUP BY
-    source_field,
-    target_field;
-```
-
 ## 実行環境
 
 ```
