@@ -96,8 +96,8 @@ Frontiersの各研究分野の説明文から単語集合を作成し、分野�
 ### 実行例
 
 ```bash
-python maintopicbase_jaccard.py \
-  --input topics.txt \
+python domainbase_jaccard.py \
+  --input domain.csv \
   --output topic_similarity.csv
 ```
 
@@ -106,8 +106,26 @@ python maintopicbase_jaccard.py \
 - 分野説明文の単語抽出
 - 単語集合の構築
 - Jaccard係数による類似度計算
+  
+### (3) リサーチトピック説明文ベースの類似度（Jaccard係数）
 
-### (3) リサーチトピックのオーナー/参加ジャーナルデータの抽出（SQL）
+Frontiersの各研究分野のリサーチトピックの説明文から単語集合を作成し、分野間の類似度を算出する。
+
+### 実行例
+
+```bash
+python researchtopicbase_jaccard.py \
+  --input researchtopic.csv \
+  --output topic_similarity.csv
+```
+
+### 内容
+
+- リサーチトピック説明文の単語抽出
+- 単語集合の構築
+- Jaccard係数による類似度計算
+- 
+### (4) リサーチトピックのオーナー/参加ジャーナルデータの抽出（SQL）
 
 リサーチトピックのオーナーとなるジャーナルとそのトピックに参加したジャーナルのリストを抽出
 
@@ -117,7 +135,7 @@ https://ma.maonet.org/
 SELECT A.researchtopicid, B.title as main_journal, A.fieldname FROM `researchtopic_fieldjournal` as A left join `researchtopic_ownerjournal` as B on A.researchtopicid = B.researchtopicid;
 ```
 
-### (4) 分野グループ（参加関係）ベースの類似度
+### (5) 分野グループ（参加関係）ベースの類似度
 
 自誌論文の参加関係から分野集合を作成し、類似度を算出する。
 
@@ -133,6 +151,7 @@ python joinmember_jaccard.py \
 
 - 分野ごとの参加分野集合を構築
 - Jaccard係数による分野間類似度の計算
+  
 ## 実行環境
 
 ```
