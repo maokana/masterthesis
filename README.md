@@ -15,7 +15,7 @@ main/
 ├── alltext_count.py --全分野での共通語を抽出するコード
 ├── embedding_and_trans.py　--単語分散表現及び分野間の単語のcos類似度を求めるコード
 ├── researchtopicbase_jaccard.py --リサーチトピックの出現単語の一致度をもとに分野間の類似度を求めるコード
-├── sectionbase_jaccard.py --分野説明の出現単語の一致度をもとに分野間の類似度を求めるコード
+├── domainbase_jaccard.py --分野説明の出現単語の一致度をもとに分野間の類似度を求めるコード
 ├── joinmember_jaccard.py --リサーチトピックの参加メンバー（主催/参加）をもとに分野間の類似度を求めるコード
 ├── journallist.sql　--リサーチトピックとオーナージャーナル、参加ジャーナルを抽出するSQL
 ├── mainbase_journallist.py　--上記SQL出力結果を基にオーナージャーナルー参加ジャーナルの形に加工するコード
@@ -23,13 +23,22 @@ main/
 └── interaction.py --上記SQL出力結果を基に分野間での交流回数をカウントするコード
 
 data/
-├── common_words.csv
-├── word_similarity.csv
-├── topic_similarity.csv
-├── membership_similarity.csv
-├── interaction_count.csv
-└── sample_input/
-    └── small_corpus.zip
+├── common_words.csv --共通語一覧データ
+├── word_similarity.csv --分析対象語の分野間のcos類似度のデータ
+├── rtopic_similarity.csv --リサーチトピックの一致度（Jaccard係数）のデータ
+├── m_membership_similarity.csv --オーナージャーナルベースでのメンバー一致度（Jaccard係数）のデータ
+├── p_membership_similarity.csv --参加ジャーナルベースでのメンバー一致度（Jaccard係数）のデータ
+├── interaction_count.csv　--分野間の交流度データ
+└── sample_input/　--main内のコードを動かすためのサンプルデータ
+    ├── researchtopic.csv
+    ├── domain.csv
+    ├── journallist.csv
+    └── sample_corpus.zip
+    　　　└── corpus/
+       　　　　　 ├── Medicine.txt
+        　　　　　├── Biology.txt
+       　　　　　 ├── Physics.txt
+       　　　　　 └── Chemistry.txt
 db/
 ├── schema.sql
 ├── sample_insert.sql   
