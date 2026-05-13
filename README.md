@@ -12,13 +12,16 @@ Computer Science, Psychology, Aging Neuroscience, Applied Mathematics and Statis
 
 ```
 main/
-├── alltext_count.py
-├── embedding_and_trans.py
-├── maintopicbase_jaccard.py
-├── joinmember_jaccard.py
-├── journallist.sql
-├── mainbase_journallist.py
-└── partbase_journallist.py
+├── alltext_count.py --全分野での共通語を抽出するコード
+├── embedding_and_trans.py　--単語分散表現及び分野間の単語のcos類似度を求めるコード
+├── researchtopicbase_jaccard.py --リサーチトピックの出現単語の一致度をもとに分野間の類似度を求めるコード
+├── sectionbase_jaccard.py --分野説明の出現単語の一致度をもとに分野間の類似度を求めるコード
+├── joinmember_jaccard.py --リサーチトピックの参加メンバー（主催/参加）をもとに分野間の類似度を求めるコード
+├── journallist.sql　--リサーチトピックとオーナージャーナル、参加ジャーナルを抽出するSQL
+├── mainbase_journallist.py　--上記SQL出力結果を基にオーナージャーナルー参加ジャーナルの形に加工するコード
+├── partbase_journallist.py　--上記SQL出力結果を基に参加ジャーナルーオーナージャーナルの形に加工するコード
+└── interaction.py --上記SQL出力結果を基に分野間での交流回数をカウントするコード
+
 data/
 ├── common_words.csv
 ├── word_similarity.csv
