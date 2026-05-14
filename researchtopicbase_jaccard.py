@@ -9,10 +9,41 @@ from itertools import combinations
 
 df = pd.read_csv('researchtopic.csv', encoding='utf-8')
 
-# 想定列:
-# journal_name
-# researchtopic
-# description
+# 新フォーマット:
+# A: researchtopic_name
+# B: researchtopic_id
+# C: description
+# D: owner_journal
+# E: participant_journal
+# F: accepting_flag
+
+# ============================================
+# 重複排除
+# ============================================
+#
+# 同一researchtopic_idについて、
+# participant_journal違いで複数行存在するため、
+# descriptionの重複カウントを防ぐ。
+#
+# 「owner_journal × researchtopic_id」
+# 単位でユニーク化する。
+#
+
+unique_topics_df = (
+    df[
+        [
+            'researchtopic_id',
+            'description',
+            'owner_journal'
+        ]
+    ]
+    .drop_duplicates(
+        subset=[
+            'researchtopic_id',
+            'owner_journal'
+        ]
+    )
+)
 
 # ============================================
 # 除外単語
@@ -37,7 +68,7 @@ skip_words = set([
 
 journal_word_dict = {}
 
-for journal_name, group in df.groupby('journal_name'):
+for journal_name, group in unique_topics_df.groupby('owner_journal'):
 
     # descriptionを結合
     text = ' '.join(
