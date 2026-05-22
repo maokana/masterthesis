@@ -14,6 +14,8 @@ Computer Science, Psychology, Aging Neuroscience, Applied Mathematics and Statis
 main/
 ├── alltext_count.py --全分野での共通語を抽出するコード
 ├── embedding_and_trans.py　--単語分散表現及び分野間の単語のcos類似度を求めるコード
+├── noun_clustering.py　--名詞を分野間の意味の揺れと分野分布の2軸から、topic系かmethod系か分類するコード
+├── tfidf_contents_similarity.py　--全論文中の名詞のtfidf値を基にしたベクトルのcos類似度から、分野間で内容の類似度を求めるコード
 ├── researchtopicbase_jaccard.py --リサーチトピックの出現単語の一致度をもとに分野間の類似度を求めるコード
 ├── domainbase_jaccard.py --分野説明の出現単語の一致度をもとに分野間の類似度を求めるコード
 ├── joinmember_jaccard.py --リサーチトピックの参加メンバー（主催/参加）をもとに分野間の類似度を求めるコード
