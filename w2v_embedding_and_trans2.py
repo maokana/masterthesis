@@ -102,10 +102,8 @@ def main():
     # =========================
     # 3. analyse_list（比較対象）
     # =========================
-    analyse_list = [
-        'analysis','model','design','figure','method',
-        'parameter','system','result','effect','data'
-    ]
+    analyse_list = [analyse_list = ['figure','study','analysis','studies','results','model','based','research','effect','associated','compared','related','effects','observed','system','development','factors','function','models','process','work','method','performance','methods','factor','findings','target','figures','described','signaling','learning','considered','analyzed','case','structure','evidence','functional','analyses','impact','result','mechanisms','interaction','cognitive','standard','experimental','revealed','systems','features','ability','design','formation','regulation','mechanism','flow','derived','influence','condition','detected','developed','determined','association','comparison','form','effective','functions','processing','subjects','defined','corresponding','proposed','interactions','consistent','limited','exposure','understanding','measures','properties','affect','resulting','suggested','assessment','components','patterns','stimulation','sequences','context','determine','solution','inhibition','contributions','investigated','attention','suggesting','assessed','image','application','caused','generated','imaging','affected','combined','pattern','baseline','availability','contributed','intervention']
+
 
     # =========================
     # 4. Cos類似度計算
